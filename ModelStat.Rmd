@@ -1,0 +1,87 @@
+---
+Titre: Les matchs de foot européens de 2008 a 2016
+author: "SARIGULYAN Thibault - LASSIAZ Thibault"
+date: "31/03/2017"
+---
+
+knitr::opts_chunk$set(echo = TRUE)
+
+------------------------------------------------
+
+#Sommaire
+
+#I - Contexte et description du DataFrame
+
+#II - Question et méthodes utilisées
+
+#III - Réponse à la question et conclusion
+
+------------------------------------------------
+
+
+
+
+#I-
+
+Nous avons travaillé sur un DataFrame créé par Hugo Mathien et regroupant plus de 25 000 Matchs de Football de 2008 à 2016 récupéré sur le site Kaggle regroupant des milliers de jeux de données. Le DataFrame est un fichier SQLite que nous avons parsé afin d'obtenir des fichiers .csv pour RStudio.
+Il contient des tables commes Matchs, Joueurs, Equipe, Ligues etc. Nous avons choisi de travailler sur la table la plus volumineuse, la table Matchs et notamment sur le nombre de buts inscrits.
+
+#II -
+
+De nos jours le foot prend une part importante dans les médias, chaque semaine on peut remarquer en première page que des grands joueurs ont battu leur propre record de buts sur une saison. On a donc choisi de vérifier si le nombre moyens de buts à augmenté depuis 2008.
+
+Nous avons décidé d'utiliser des histogrammes afin de voir s'il y avait une différence significative au niveau des buts marqués à domicile et à l'extérieur.
+On remarque que les buts à l'extérieur sont principalement compris entre 0 et 1. En revanche pour le nombre de buts inscrits à domicile on peut remarquer que trois valeurs se détachent (1,2,3) ce qui montre bien que le nombre de buts marqués par matchs est plus important à domicile.
+
+```{r}
+library(dplyr);
+
+df <- read.csv("C:/Users/Asus G75/Desktop/RStudio/Pepite/Match.csv", header=TRUE, sep=";");
+
+hist(df$home_team_goal, xlab="Goal", main="Home Team Goal")
+
+hist(df$away_team_goal, xlab="Goal", main="Away Team Goal")
+
+```
+
+
+On a cherché à comprendre plus profondémment comment l'équipe à domicile marquait plus souvent une ou plusieurs fois alors que l'équipe qui joue à l'extérieur ne marque souvent pas. Pour approfondir la question, nous avons utilisé un boxplot afin de se rendre compte de la répartition des buts. On remarque que l'équipe qui joue à domicile a une répartition bien plus régulière de ses résultats.
+
+```{r}
+boxplot(df$home_team_goal, df$away_team_goal);
+```
+
+
+On a alors cherché a comprendre quel impact avait le fait d'être a domicile et on a donc utilisé Summary afin d'avoir la moyenne des buts à domicile et à l'exterieur. On remarque bien ici que le nombre de buts moyens pour l'équipe à domicile est bien supérieur au nombre de but que marque l'équipe qui joue à l'exterieur.
+
+```{r}
+summary(df$home_team_goal);
+
+summary(df$away_team_goal);
+```
+
+Concernant la question de base, on a tout d'abord cherché le nombre de but moyen total d'un match, le but étant de se faire une idée de sa valeur avant de se lancer dans une analyse saison par saison.
+
+```{r}
+totalbutHome <- mean(df$home_team_goal);
+totalbutAway <- mean(df$away_team_goal);
+MoyButTotal <- (totalbutHome + totalbutAway)
+head(MoyButTotal)
+```
+
+On a finalement cherché à savoir si le nombre de buts augmentait en foncion des saisons et on a comparé le nombre de buts moyens par saison allant de 2008 à 2016. Globalement si on répond à la question de base étant : "Le nombre de but a t-il augmenté de 2008 à 2016", la réponse est oui. Grâce a un histogramme et à la librairie dplyr, nous avons pu récupérer la moyenne de buts marqués par saison et constater une augmentation, certe légère d'environ 0.3 buts moyen supplémentaire par saison. D'une moyenne tendant vers 2.5 en 2008, on se rapproche aujourd'hui de plus en plus des 3 buts par match.
+
+```{r}
+library(ggplot2);
+
+df %>%
+  group_by(season) %>% 
+  summarise(Buts_moyens = mean(home_team_goal+away_team_goal)) %>%
+  ggplot(aes(x=season, y=Buts_moyens)) +
+          geom_point() + ylim(0,3) + theme_bw();
+```
+
+#III - 
+
+On remarque d'après nos analyses que le nombre de buts moyens par saisons à augmenté. Cependant le nombre moyens de buts n'a pas fait que d'augmenter depuis 2008 il n'est donc pas croissant. Pour terminer cette analyse au vu de l'évolution du nombre de buts depuis 2008, nous pouvons nous poser la question :
+Les joueurs sont-ils meilleurs aujourd'hui ?
